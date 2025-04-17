@@ -260,7 +260,7 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 #     },
 # }
 
-YOUR_VK_CLIENT_ID = 53408311
+YOUR_VK_CLIENT_ID = '53408311'
 YOUR_VK_CLIENT_SECRET = "kzTfg3wZUMd0MzQvq2DK"
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
@@ -277,7 +277,7 @@ SOCIALACCOUNT_PROVIDERS = {
         'AUTH_PARAMS': {'v': '5.131'},
         'OAUTH_PKCE_ENABLED': True,
         'METHOD': 'oauth2',
-        'OAUTH_CALLBACK_URL': 'https://back.aviantrf.ru/auth/vk/login/callback/'
+        'OAUTH_CALLBACK_URL': 'http://127.0.0.1:8000/auth/vk/login/callback/'
     }
 }
 
