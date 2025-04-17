@@ -153,7 +153,7 @@ class VKAuthAPIView(APIView):
 			f"https://oauth.vk.com/access_token?"
 			f"client_id=52982778&"
 			f"client_secret=tPZ6YRgnZzwubzWy7RyF&"
-			f"redirect_uri=https://xn--d1aadaem2ajbjp9p.xn--p1ai/auth/vk/login/callback/&"
+			f"redirect_uri=https://back.aviantrf.ru/auth/vk/login/callback/&"
 			f"code={code}"
 		)
 

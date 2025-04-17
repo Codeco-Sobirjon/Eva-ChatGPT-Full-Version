@@ -12,8 +12,6 @@ class GoogleLoginService:
     USER_INFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
     def get_authorization_url(self):
-        print(settings.GOOGLE_REDIRECT_URI)
-        print(settings.GOOGLE_CLIENT_ID)
         params = {
             "client_id": settings.GOOGLE_CLIENT_ID,
             "redirect_uri": settings.GOOGLE_REDIRECT_URI,
