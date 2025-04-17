@@ -2,6 +2,9 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from decouple import config
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -260,8 +263,8 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 YOUR_VK_CLIENT_ID = 53408311
 YOUR_VK_CLIENT_SECRET = "kzTfg3wZUMd0MzQvq2DK"
 
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_REDIRECT_URI = "https://back.aviantrf.ru/api/auth/google/callback/"
 
 SOCIALACCOUNT_PROVIDERS = {

@@ -8,8 +8,11 @@ from rest_framework import status
 
 from apps.chat.models import ChatHistory, Message
 from apps.prices_x_cards.models import Payment
+from dotenv import load_dotenv
+load_dotenv()
 
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
 
 client = openai.OpenAI(
 	api_key=OPENAI_API_KEY)
