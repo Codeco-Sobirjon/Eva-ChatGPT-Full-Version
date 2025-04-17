@@ -27,7 +27,7 @@ class GoogleLoginService:
             "code": code,
             "client_id": settings.GOOGLE_CLIENT_ID,
             "client_secret": settings.GOOGLE_CLIENT_SECRET,
-            "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+            "redirect_uri": 'https://back.aviantrf.ru/api/auth/google/callback/',
             "grant_type": "authorization_code",
         }
         response = requests.post(self.TOKEN_URL, data=data)
