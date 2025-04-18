@@ -62,8 +62,9 @@ class TypingView(APIView):
         }
     )
     def post(self, request, *args, **kwargs):
-        chat_history = get_object_or_404(ChatHistory, id=kwargs['id'])
-
+        print(kwargs['id'])
+        chat_history = get_object_or_404(ChatHistory, id=kwargs.get('id'))
+        print(chat_history)
         serializer = ChatHistorySerializer(
             chat_history,
             data=request.data,
