@@ -62,10 +62,7 @@ class TypingView(APIView):
         }
     )
     def post(self, request, *args, **kwargs):
-        chat_history = ChatHistory.objects.filter(id=kwargs['id']).first()
-        print(chat_history)
-        if not chat_history:
-            return Response({"message": "Пользователь пока не приобрёл ни одного тарифа."}, status=status.HTTP_202_ACCEPTED)
+        chat_history = get_object_or_404(ChatHistory, id=kwargs['id'])
 
         serializer = ChatHistorySerializer(
             chat_history,
