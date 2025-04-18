@@ -131,11 +131,15 @@ class ChatService:
                     chat_history.save()
                     raise ValidationError('Лимит чатов для тарифа исчерпан.')
             else:
-                Message.objects.create(
-                    chat_history=chat_history,
-                    question=message_content,
-                    first_message=True
-                )
+
+	            if request_count.request_count < allowed_typing_count:
+	                Message.objects.create(
+	                    chat_history=chat_history,
+	                    question=message_content,
+	                    first_message=True
+	                )
+	            else:
+	                raise ValidationError('Лимит чатов для тарифа исчерпан.')
 
             request_count.request_count += 1
             request_count.save()
