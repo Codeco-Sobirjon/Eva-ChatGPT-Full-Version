@@ -281,7 +281,7 @@ SOCIALACCOUNT_PROVIDERS = {
         'AUTH_PARAMS': {'v': '5.131'},
         'OAUTH_PKCE_ENABLED': True,
         'METHOD': 'oauth2',
-        'OAUTH_CALLBACK_URL': 'http://localhost/auth/vk/login/callback/'
+        'OAUTH_CALLBACK_URL': 'https://lo/auth/vk/login/callback/'
     }
 }
 
