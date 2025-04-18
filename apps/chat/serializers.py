@@ -61,13 +61,16 @@ class ChatHistorySerializer(serializers.ModelSerializer):
             return chat_history
         except ValidationError as e:
             if isinstance(e.detail, (list, tuple)) and len(e.detail) > 0:
+                print(5)
                 error_message = str(e.detail[0])
             elif isinstance(e.detail, dict):
                 key, val = list(e.detail.items())[0]
+                print(2)
                 error_message = str(val[0]) if isinstance(val, list) else str(val)
             else:
+                print(3)
                 error_message = str(e.detail)
-
+            print(4)
             raise serializers.ValidationError({"message": error_message})
 
 
