@@ -274,14 +274,14 @@ GOOGLE_REDIRECT_URI = "https://back.aviantrf.ru/api/auth/google/callback/"
 SOCIALACCOUNT_PROVIDERS = {
     'vk': {
         'APP': {
-            'client_id': YOUR_VK_CLIENT_ID,
-            'secret': YOUR_VK_CLIENT_SECRET,
+            'client_id': '53408311',
+            'secret': 'kzTfg3wZUMd0MzQvq2DK',
         },
         'SCOPE': ['email'],
         'AUTH_PARAMS': {'v': '5.131'},
         'OAUTH_PKCE_ENABLED': True,
         'METHOD': 'oauth2',
-        'OAUTH_CALLBACK_URL': 'http://localhost/auth/vk/login/callback/'
+        'OAUTH_CALLBACK_URL': 'http://localhost/auth/vk/login/callback/',
     }
 }
 
