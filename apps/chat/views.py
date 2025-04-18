@@ -29,7 +29,7 @@ class ChatHistoryCreateView(APIView):
         serializer = ChatHistoryCreateSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             chat_history = serializer.save()
-            return Response({"message": "Chat history created successfully."}, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
