@@ -129,7 +129,7 @@ class ChatService:
                 else:
                     chat_history.is_active = False
                     chat_history.save()
-                    raise ValidationError('Лимит чатов для тарифа "{product_pocket.title}" исчерпан.')
+                    raise ValidationError('Лимит чатов для тарифа исчерпан.')
             else:
                 Message.objects.create(
                     chat_history=chat_history,
