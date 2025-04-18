@@ -3,10 +3,11 @@ import os
 import openai
 from functools import lru_cache
 from django.db import transaction
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from rest_framework.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 
-from apps.chat.models import ChatHistory, Message
+from apps.chat.models import ChatHistory, Message, RequestCount
 from apps.prices_x_cards.models import Payment
 from dotenv import load_dotenv
 load_dotenv()
@@ -95,53 +96,48 @@ def chatbot_response(user_message):
 
 
 class ChatService:
-	@staticmethod
-	def create_chat_history_and_message(user, message_content):
+    @staticmethod
+    def create_chat_history_and_message(user, message_content, chat_history_id):
+        payment = Payment.objects.filter(user=user, status='success').last()
 
-		check_pocket_buy_by_user = Payment.objects.select_related('user').filter(
-			user=user
-		).last()
+        if not payment:
+            raise ValidationError("Пользователь пока не приобрёл ни одного тарифа.")
 
-		if not check_pocket_buy_by_user or check_pocket_buy_by_user.status != 'success':
-			raise ValueError('Пользователь пока не приобрёл ни одного тарифа.', status.HTTP_400_BAD_REQUEST)
+        product_pocket = payment.product_pocket
+        allowed_typing_count = product_pocket.count_typing
 
-		with transaction.atomic():
-			chat_history_exists = ChatHistory.objects.select_related('user').filter(user=user, is_active=True).last()
+        chat_history = ChatHistory.objects.filter(pk=chat_history_id).first()
+        if not chat_history:
+            raise ValidationError("История чата не найдена.")
 
-			if chat_history_exists:
+        request_count = RequestCount.objects.filter(user=user).order_by('-id').first()
+        if not request_count:
+            raise ValidationError("Данные о лимите запросов не найдены для пользователя.")
 
-				chat_message_exists = Message.objects.select_related('chat_history').filter(
-					chat_history=chat_history_exists, first_message=True
-				).last()
+        with transaction.atomic():
+            first_message = Message.objects.filter(
+                chat_history=chat_history, first_message=True
+            ).last()
 
-				if chat_message_exists:
+            if first_message:
+                if request_count.request_count < allowed_typing_count:
+                    Message.objects.create(
+                        chat_history=chat_history,
+                        question=message_content,
+                        first_message=False
+                    )
+                else:
+                    chat_history.is_active = False
+                    chat_history.save()
+                    raise ValidationError('Лимит чатов для тарифа "{product_pocket.title}" исчерпан.')
+            else:
+                Message.objects.create(
+                    chat_history=chat_history,
+                    question=message_content,
+                    first_message=True
+                )
 
-					if int(chat_message_exists.chat_history.request_count) < int(check_pocket_buy_by_user.product_pocket.count_typing):
+            request_count.request_count += 1
+            request_count.save()
 
-						Message.objects.create(
-							chat_history=chat_history_exists,
-							question=message_content,
-							first_message=False
-						)
-						chat_history_exists.request_count += 1
-						chat_history_exists.save()
-						return chat_history_exists
-
-					else:
-
-						chat_history_exists.is_active=False
-						chat_history_exists.save()
-						raise ObjectDoesNotExist(
-							f'Лимит чатов для данного тарифа {check_pocket_buy_by_user.product_pocket.title} исчерпан.'
-						)
-
-				Message.objects.create(
-					chat_history=chat_history_exists, question=message_content, first_message=True
-				)
-
-				chat_history_exists.request_count += 1
-				chat_history_exists.save()
-
-				return chat_history_exists
-
-			raise ObjectDoesNotExist('Пользователь пока не приобрёл ни одного тарифа.')
+            return chat_history

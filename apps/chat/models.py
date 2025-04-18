@@ -8,12 +8,11 @@ class ChatHistory(models.Model):
 	                         null=True, blank=True)
 	created = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания", null=True, blank=True)
 	is_active = models.BooleanField(default=True, verbose_name="Активный статус", null=True, blank=True)
-	pocket = models.ForeignKey(ProductPocket, on_delete=models.CASCADE, verbose_name="Товар", null=True, blank=True)
-	request_count = models.PositiveIntegerField(default=0, verbose_name="Количество запросов", null=True, blank=True)
+
 	objects = models.Manager()
 
 	def __str__(self):
-		return f"{self.user.username}"
+		return f"{self.user.username}: {self.id}"
 
 	class Meta:
 		verbose_name = "История чата"
@@ -53,3 +52,21 @@ class Answer(models.Model):
 		verbose_name = "Ответ"
 		verbose_name_plural = "Ответы"
 		ordering = ["created"]
+
+
+class RequestCount(models.Model):
+	user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="request_counts", verbose_name="Пользователь")
+	request_count = models.PositiveIntegerField(default=0, verbose_name="Количество запросов", null=True, blank=True)
+	created = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания", null=True, blank=True)
+	is_active = models.BooleanField(default=True, verbose_name="Активный статус", null=True, blank=True)
+
+	objects = models.Manager()
+
+	def __str__(self):
+		return f"{self.user.username}"
+
+	class Meta:
+		verbose_name = "Количество запросов"
+		verbose_name_plural = "Количество запросов"
+		ordering = ["-created"]
+

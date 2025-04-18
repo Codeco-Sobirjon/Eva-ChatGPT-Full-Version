@@ -8,6 +8,33 @@ from apps.prices_x_cards.models import Payment
 from apps.chat.service import chatbot_response, ChatService
 
 
+class ChatHistoryCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatHistory
+        fields = ["id", "user", "created", "is_active"]
+
+    def create(self, validated_data):
+        user = self.context.get('request').user
+
+        chat_history_user_is_active_change = ChatHistory.objects.filter(user=user).update(is_active=False)
+        chat_history = ChatHistory.objects.create(**validated_data, user=user, is_active=True)
+        return chat_history
+
+
+class MessageListUserSerializer(serializers.ModelSerializer):
+    chat_history = ChatHistoryCreateSerializer(read_only=True)
+    answer = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Message
+        fields = ["id", "question", "created", "chat_history"]
+
+    def get_answer(self, obj):
+        get_answer = Answer.objects.select_related('message').filter(message=obj).first()
+        serializer = AnswerSerializer(get_answer, context={'request': self.context.get('request')})
+        return serializer.data
+
+
 class ChatHistorySerializer(serializers.ModelSerializer):
     message = serializers.CharField(write_only=True, required=False, allow_blank=False)
 
@@ -21,19 +48,28 @@ class ChatHistorySerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Message cannot be empty.")
         return value
 
-    def create(self, validated_data):
+    def update(self, instance, validated_data):
         user = self.context.get('request').user
         message_content = validated_data.pop('message', None)
+        chat_history_id = self.context.get('chat_history_id')
 
         try:
-            chat_history = ChatService.create_chat_history_and_message(user, message_content)
+            chat_history = ChatService.create_chat_history_and_message(
+                user, message_content, chat_history_id
+            )
             return chat_history
         except ValidationError as e:
-            raise serializers.ValidationError(str(e))
+            # Вытаскиваем из ErrorDetail красивую строку
+            if isinstance(e.detail, (list, tuple)) and len(e.detail) > 0:
+                error_message = str(e.detail[0])
+            elif isinstance(e.detail, dict):
+                key, val = list(e.detail.items())[0]
+                error_message = str(val[0]) if isinstance(val, list) else str(val)
+            else:
+                error_message = str(e.detail)
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        return representation
+            raise serializers.ValidationError({"message": error_message})
+
 
 
 class AnswerSerializer(serializers.ModelSerializer):

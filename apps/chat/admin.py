@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.chat.models import Message, ChatHistory, Answer
+from apps.chat.models import Message, ChatHistory, Answer, RequestCount
 
 
 @admin.register(Message)
@@ -16,3 +16,8 @@ class ChatHistoryAdmin(admin.ModelAdmin):
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
 	list_display = ('message', 'answer', 'created')
+
+
+@admin.register(RequestCount)
+class RequestCountAdmin(admin.ModelAdmin):
+    list_display = ['id', 'request_count', 'user']

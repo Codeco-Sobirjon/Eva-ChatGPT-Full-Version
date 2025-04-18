@@ -16,44 +16,65 @@ from drf_yasg import openapi
 from apps.accounts.models import CustomUser
 from apps.accounts.serializers import CustomUserDetailSerializer
 from apps.chat.models import Message, ChatHistory, Answer
-from apps.chat.serializers import ChatHistorySerializer, ChatHistoryDetailSerializer
+from apps.chat.serializers import ChatHistorySerializer, ChatHistoryDetailSerializer, ChatHistoryCreateSerializer, \
+    MessageListUserSerializer
 from apps.chat.service import chatbot_response
 from apps.prices_x_cards.models import Payment
 
 
-class ChatHistoryView(APIView):
+class ChatHistoryCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = ChatHistoryCreateSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            chat_history = serializer.save()
+            return Response({"message": "Chat history created successfully."}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MessageListUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        chat_history = get_object_or_404(ChatHistory, id=kwargs['id'])
+        messages = Message.objects.filter(chat_history=chat_history)
+        serializer = MessageListUserSerializer(messages, many=True, context={'request': request})
+        return Response(serializer.data)
+
+
+class TypingView(APIView):
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        operation_description="Create a new chat history for the authenticated user.",
+        operation_description="Send typing status to the chatbot.",
         tags=['Chat History'],
-        request_body=ChatHistorySerializer,
         responses={
-            201: openapi.Response(
-                description="Chat history created successfully.",
+            200: openapi.Response(
+                description="Typing status sent successfully.",
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        'message': openapi.Schema(type=openapi.TYPE_STRING, example="Chat history created successfully.")
-                    }
-                )
-            ),
-            400: openapi.Response(
-                description="Invalid input data.",
-                schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        'error': openapi.Schema(type=openapi.TYPE_OBJECT, description="Error details")
+                        'message': openapi.Schema(type=openapi.TYPE_STRING, example="Typing status sent successfully.")
                     }
                 )
             )
         }
     )
     def post(self, request, *args, **kwargs):
-        serializer = ChatHistorySerializer(data=request.data, context={'request': request})
+        chat_history = ChatHistory.objects.filter(id=kwargs['id']).first()
+        if not chat_history:
+            return Response({"message": "Пользователь пока не приобрёл ни одного тарифа."}, status=status.HTTP_202_ACCEPTED)
+
+        serializer = ChatHistorySerializer(
+            chat_history,
+            data=request.data,
+            context={'request': request, 'chat_history_id': chat_history.id}
+        )
+
         if serializer.is_valid():
-            chat_history = serializer.save()
-            return Response({"message": "Chat history created successfully."}, status=status.HTTP_201_CREATED)
+            serializer.save()
+            return Response({"message": "Typing status sent successfully."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

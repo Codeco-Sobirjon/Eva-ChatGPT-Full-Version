@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from apps.accounts.serializers import CustomUserDetailSerializer
-from apps.chat.models import ChatHistory
+from apps.chat.models import ChatHistory, RequestCount
 from apps.prices_x_cards.models import ProductPocket, Card, Payment
 
 
@@ -52,8 +52,8 @@ class PaymentSerializer(serializers.ModelSerializer):
 
         create_payment = Payment.objects.create(**validated_data, card=create_card)
 
-        chat_history = ChatHistory.objects.create(
-            user=user, is_active=True, pocket=create_payment.product_pocket
+        request_count = RequestCount.objects.create(
+            user=user, is_active=True
         )
         return create_payment
 
