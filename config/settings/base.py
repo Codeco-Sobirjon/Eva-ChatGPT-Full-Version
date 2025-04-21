@@ -264,8 +264,8 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 # YOUR_VK_CLIENT_SECRET = "kzTfg3wZUMd0MzQvq2DK"
 
 
-YOUR_VK_CLIENT_ID = '53408311'
-YOUR_VK_CLIENT_SECRET = 'kzTfg3wZUMd0MzQvq2DK'
+YOUR_VK_CLIENT_ID = '52982778'
+YOUR_VK_CLIENT_SECRET = 'tPZ6YRgnZzwubzWy7RyF'
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
@@ -274,14 +274,14 @@ GOOGLE_REDIRECT_URI = "https://back.aviantrf.ru/api/auth/google/callback/"
 SOCIALACCOUNT_PROVIDERS = {
     'vk': {
         'APP': {
-            'client_id': '53408311',
-            'secret': 'kzTfg3wZUMd0MzQvq2DK',
+            'client_id': YOUR_VK_CLIENT_ID,
+            'secret': YOUR_VK_CLIENT_SECRET,
         },
         'SCOPE': ['email'],
         'AUTH_PARAMS': {'v': '5.131'},
         'OAUTH_PKCE_ENABLED': True,
         'METHOD': 'oauth2',
-        'OAUTH_CALLBACK_URL': 'http://localhost/auth/vk/login/callback/',
+        'OAUTH_CALLBACK_URL': 'https://eva-three-mu.vercel.app/auth/vk/login/callback/'
     }
 }
 
