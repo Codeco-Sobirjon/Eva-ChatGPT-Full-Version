@@ -98,14 +98,6 @@ def chatbot_response(user_message):
 class ChatService:
     @staticmethod
     def create_chat_history_and_message(user, message_content, chat_history_id):
-        payment = Payment.objects.filter(user=user, status='success').last()
-
-        if not payment:
-            raise ValidationError("Пользователь пока не приобрёл ни одного тарифа.")
-
-        product_pocket = payment.product_pocket
-        allowed_typing_count = product_pocket.count_typing
-
         chat_history = ChatHistory.objects.filter(pk=chat_history_id).first()
         if not chat_history:
             raise ValidationError("История чата не найдена.")
@@ -114,32 +106,28 @@ class ChatService:
         if not request_count:
             raise ValidationError("Данные о лимите запросов не найдены для пользователя.")
 
+        payment = Payment.objects.filter(user=user, status='success').last()
+
+        if not payment and request_count.request_count > 0:
+            raise ValidationError("Вы уже использовали бесплатный запрос. Для продолжения приобретите тариф.")
+
+        allowed_typing_count = 1 if not payment else payment.product_pocket.count_typing
+
         with transaction.atomic():
             first_message = Message.objects.filter(
                 chat_history=chat_history, first_message=True
             ).last()
 
-            if first_message:
-                if request_count.request_count < allowed_typing_count:
-                    Message.objects.create(
-                        chat_history=chat_history,
-                        question=message_content,
-                        first_message=False
-                    )
-                else:
-                    chat_history.is_active = False
-                    chat_history.save()
-                    raise ValidationError('Лимит чатов для тарифа исчерпан.')
+            if request_count.request_count < allowed_typing_count:
+                Message.objects.create(
+                    chat_history=chat_history,
+                    question=message_content,
+                    first_message=not bool(first_message)
+                )
             else:
-
-	            if request_count.request_count < allowed_typing_count:
-	                Message.objects.create(
-	                    chat_history=chat_history,
-	                    question=message_content,
-	                    first_message=True
-	                )
-	            else:
-	                raise ValidationError('Лимит чатов для тарифа исчерпан.')
+                chat_history.is_active = False
+                chat_history.save()
+                raise ValidationError('Лимит чатов для тарифа исчерпан.')
 
             request_count.request_count += 1
             request_count.save()
