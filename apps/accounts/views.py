@@ -1,6 +1,7 @@
 from urllib.parse import urlparse, parse_qs
 
 from django.core.files.base import ContentFile
+from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
@@ -352,7 +353,7 @@ class CustomUserDetailView(APIView):
 	def delete(self, request):
 		user = request.user
 		user.delete()
-		return Response({"detail": _("User deleted successfully.")}, status=status.HTTP_204_NO_CONTENT)
+		return Response({"detail": "User deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 
 class CustomUserView(APIView):

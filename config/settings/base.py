@@ -260,16 +260,16 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 #     },
 # }
 
-# YOUR_VK_CLIENT_ID = '53408311'
-# YOUR_VK_CLIENT_SECRET = "kzTfg3wZUMd0MzQvq2DK"
+YOUR_VK_CLIENT_ID = '53467926'
+YOUR_VK_CLIENT_SECRET = "3RLC3fBxCaCvhElNBO2b"
 
 
-YOUR_VK_CLIENT_ID = '52982778'
-YOUR_VK_CLIENT_SECRET = 'tPZ6YRgnZzwubzWy7RyF'
+# YOUR_VK_CLIENT_ID = '52982778'
+# YOUR_VK_CLIENT_SECRET = 'tPZ6YRgnZzwubzWy7RyF'
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-GOOGLE_REDIRECT_URI = "https://back.aviantrf.ru/api/auth/google/callback/"
+GOOGLE_REDIRECT_URI = "https://eva-three-mu.vercel.app/api/auth/google/callback/"
 
 SOCIALACCOUNT_PROVIDERS = {
     'vk': {
@@ -299,3 +299,6 @@ ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_UNIQUE_EMAIL = True
 
 BASE_URL = ''
+ROBOKASSA_SHOP_ID = "askEVA"
+ROBOKASSA_SECRET_KEY = "k1FN47BzoHCkL4GOS3UW"
+ROBOKASSA_URL = "https://auth.robokassa.ru/Merchant/Index.aspx"
