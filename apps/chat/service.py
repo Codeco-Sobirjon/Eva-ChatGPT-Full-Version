@@ -104,7 +104,7 @@ class ChatService:
 
         request_count = RequestCount.objects.filter(user=user).order_by('-id').first()
         if not request_count:
-            raise ValidationError("Данные о лимите запросов не найдены для пользователя.")
+            request_count = RequestCount.objects.create(user=user, request_count=0)
 
         payment = Payment.objects.filter(user=user, status='success').last()
 

@@ -302,3 +302,8 @@ BASE_URL = ''
 ROBOKASSA_SHOP_ID = "askEVA"
 ROBOKASSA_SECRET_KEY = "k1FN47BzoHCkL4GOS3UW"
 ROBOKASSA_URL = "https://auth.robokassa.ru/Merchant/Index.aspx"
+
+TINKOFF_TERMINAL_KEY = 'YourTerminalKey'
+TINKOFF_PASSWORD = 'YourPassword'
+TINKOFF_AMOUNT = 10000  # in kopecks (100.00 RUB)
+TINKOFF_CARD = '4111111111111111'  # test Visa
