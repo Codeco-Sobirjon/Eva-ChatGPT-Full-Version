@@ -119,7 +119,7 @@ class ChatService:
             ).last()
 
             if request_count.request_count < allowed_typing_count:
-                Message.objects.create(
+                message = Message.objects.create(
                     chat_history=chat_history,
                     question=message_content,
                     first_message=not bool(first_message)
@@ -132,4 +132,4 @@ class ChatService:
             request_count.request_count += 1
             request_count.save()
 
-            return chat_history
+            return message

@@ -70,8 +70,11 @@ class TypingView(APIView):
         )
 
         if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Typing status sent successfully."}, status=status.HTTP_200_OK)
+            result = serializer.save()
+            return Response({
+                "message": "Typing status sent successfully.",
+                "message_id": result["message_id"]
+            }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

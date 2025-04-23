@@ -54,10 +54,10 @@ class ChatHistorySerializer(serializers.ModelSerializer):
         chat_history_id = self.context.get('chat_history_id')
 
         try:
-            chat_history = ChatService.create_chat_history_and_message(
+            message = ChatService.create_chat_history_and_message(
                 user, message_content, chat_history_id
             )
-            return chat_history
+            return {"chat_history": instance, "message_id": message.id}
         except ValidationError as e:
             if isinstance(e.detail, (list, tuple)) and len(e.detail) > 0:
                 error_message = str(e.detail[0])
