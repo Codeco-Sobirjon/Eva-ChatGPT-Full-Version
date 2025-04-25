@@ -54,6 +54,7 @@ class Payment(models.Model):
 	user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь", null=True, blank=True)
 	product_pocket = models.ForeignKey(ProductPocket, on_delete=models.CASCADE, verbose_name="Товар", null=True,
 	                                   blank=True)
+	order_id = models.CharField(max_length=255, verbose_name="Номер заказа", null=True, blank=True)
 	card = models.ForeignKey(Card, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Карта")
 	amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Сумма", null=True, blank=True)
 	status = models.CharField(max_length=10, choices=PAYMENT_STATUS_CHOICES, default='pending', verbose_name="Статус",
