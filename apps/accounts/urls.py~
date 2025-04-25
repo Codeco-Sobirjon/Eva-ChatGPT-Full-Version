@@ -1,11 +1,10 @@
 from django.urls import path
 
 from apps.accounts.views import GoogleLoginAPIView, VKAuthAPIView, VKLogin, UserSignupView, CustomAuthTokenView, \
-	CustomUserDetailView, PasswordUpdateView, VKSignInURLAPIView
+	CustomUserDetailView, PasswordUpdateView
 
 urlpatterns = [
 	path('auth/google/', GoogleLoginAPIView.as_view(), name='google-login'),
-	path('auth/vk/sign-in-url/', VKSignInURLAPIView.as_view(), name='vk-sign-in-url'),
 	path("auth/check/vk/", VKAuthAPIView.as_view(), name="vk-auth"),
     path('auth/vk/', VKLogin.as_view(), name='vk_login'),
 	path('signup/', UserSignupView.as_view(), name='signup'),

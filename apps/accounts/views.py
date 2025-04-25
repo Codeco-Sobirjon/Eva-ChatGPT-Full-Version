@@ -99,6 +99,44 @@ class GoogleLoginAPIView(APIView):
 		}, status=status.HTTP_200_OK)
 
 
+class VKSignInURLAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        tags=['VK'],
+        operation_summary="Получение URL для входа через VK",
+        operation_description="Этот эндпоинт возвращает URL для авторизации через VK.",
+        responses={
+            200: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "sign_in_url": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="URL для входа через VK."
+                    )
+                }
+            )
+        }
+    )
+    def get(self, request):
+        client_id = "52982778"
+        redirect_uri = "https://eva-three-mu.vercel.app/auth/vk/login/callback/"
+        scope = "email"
+        response_type = "code"
+        v = "5.131"
+
+        sign_in_url = (
+            f"https://oauth.vk.com/authorize?"
+            f"client_id={client_id}&"
+            f"redirect_uri={redirect_uri}&"
+            f"scope={scope}&"
+            f"response_type={response_type}&"
+            f"v={v}"
+        )
+
+        return Response({"sign_in_url": sign_in_url}, status=200)
+
+
 class VKAuthAPIView(APIView):
 	permission_classes = [AllowAny]
 
