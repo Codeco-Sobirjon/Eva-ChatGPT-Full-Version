@@ -1,3 +1,4 @@
+from drf_yasg import openapi
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -10,8 +11,8 @@ from django.utils import timezone
 
 
 class BlogPagination(PageNumberPagination):
-	page_size = 8
-	page_size_query_param = 'page_size'
+	page_size = 1
+	page_size_query_param = 'limit'
 	max_page_size = 100
 
 
@@ -20,11 +21,25 @@ class BlogListCreateAPIView(APIView):
 
 	@swagger_auto_schema(
 		tags=['Blogs'],
-		operation_summary="Получить список блогов с пагинацией",
+		operation_summary="Получить список блогов с пагинацией и лимитом",
+		manual_parameters=[
+			openapi.Parameter(
+				name='page',
+				in_=openapi.IN_QUERY,
+				description='Номер страницы',
+				type=openapi.TYPE_INTEGER
+			),
+			openapi.Parameter(
+				name='limit',
+				in_=openapi.IN_QUERY,
+				description='Количество блогов на странице (переопределяет стандартный размер страницы)',
+				type=openapi.TYPE_INTEGER
+			)
+		],
 		responses={200: BlogSerializer(many=True)}
 	)
 	def get(self, request):
-		blogs = Blog.objects.all().order_by('-created_at').filter(status=Blog.BlogStatus.ACTIVE)
+		blogs = Blog.objects.filter(status=Blog.BlogStatus.ACTIVE).order_by('-created_at')
 		paginator = BlogPagination()
 		result_page = paginator.paginate_queryset(blogs, request)
 		serializer = BlogSerializer(result_page, many=True, context={'request': request})
