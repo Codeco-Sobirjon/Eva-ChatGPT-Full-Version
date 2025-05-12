@@ -18,10 +18,10 @@ from apps.prices_x_cards.models import ProductPocket, Payment
 
 
 class TbankInitPaymentView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
-    TERMINAL_KEY = "1745327712776DEMO"
-    PASSWORD = "9KlOjAkC^rgfG7Gl"
+    TERMINAL_KEY = "1745327712798"
+    PASSWORD = "VxMqwnk8t7xOJ!2E"
     INIT_URL = "https://securepay.tinkoff.ru/v2/Init"
 
     def generate_token(self, data, password):
@@ -32,6 +32,46 @@ class TbankInitPaymentView(APIView):
         token_string = "".join(str(v) for _, v in sorted_items)
         return hashlib.sha256(token_string.encode()).hexdigest()
 
+    @swagger_auto_schema(
+        operation_description="Инициализация платежа через Tinkoff для выбранного продукта.",
+        manual_parameters=[
+            openapi.Parameter(
+                name="id",
+                in_=openapi.IN_PATH,
+                description="ID продукта (ProductPocket)",
+                type=openapi.TYPE_INTEGER,
+                required=True
+            )
+        ],
+        responses={
+            200: openapi.Response(
+                description="Успешная инициализация платежа",
+                examples={
+                    "application/json": {
+                        "order_id": "example-order-id",
+                        "payment_url": "https://securepay.tinkoff.ru/v2/...",
+                        "payment_id": 12345678
+                    }
+                }
+            ),
+            400: openapi.Response(
+                description="Ошибка запроса",
+                examples={
+                    "application/json": {
+                        "detail": "ID продукта не передан"
+                    }
+                }
+            ),
+            500: openapi.Response(
+                description="Ошибка при запросе к Tinkoff API",
+                examples={
+                    "application/json": {
+                        "error": "requests.exceptions.ConnectionError"
+                    }
+                }
+            ),
+        }
+    )
     def post(self, request, *args, **kwargs):
         product_id = kwargs.get("id")
         if not product_id:
@@ -172,6 +212,7 @@ class CheckPaymentStatusView(APIView):
 
             try:
                 result = response.json()
+                print(result)
             except json.JSONDecodeError as e:
                 return Response({
                     "detail": "Tinkoff javobi JSON emas",
