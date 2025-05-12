@@ -12,5 +12,5 @@ urlpatterns = [
 
     path("payment/init/<int:id>/", TbankInitPaymentView.as_view(), name="payment-init"),
     # path("tinkoff/init/", TbankInitPaymentView.as_view(), name="tinkoff-init"),
-    path("check-payment/<int:payment_id>/<str:order_id>/", CheckPaymentStatusView.as_view(), name="check-payment"),
+    path("check-payment/", CheckPaymentStatusView.as_view(), name="check-payment"),
 ]

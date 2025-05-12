@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.chat.models import RequestCount
-from apps.prices_x_cards.models import ProductPocket, Payment
+from apps.prices_x_cards.models import ProductPocket, Payment, Card
 
 
 class TbankInitPaymentView(APIView):
@@ -80,6 +80,12 @@ class TbankInitPaymentView(APIView):
         product = get_object_or_404(ProductPocket, id=product_id)
         order_id = str(uuid.uuid4())
 
+        customer_key = None
+        if request.user.is_authenticated:
+            customer_key = str(request.user.id)
+        else:
+            customer_key = str(uuid.uuid4())
+
         data = {
             "TerminalKey": self.TERMINAL_KEY,
             "Amount": int(product.price * 100),
@@ -87,6 +93,7 @@ class TbankInitPaymentView(APIView):
             "Description": f"Оплата за продукт: {product.title}",
             "SuccessURL": "https://eva-three-mu.vercel.app/",
             "FailURL": "https://eva-three-mu.vercel.app/",
+            "CustomerKey": customer_key
         }
 
         data["Token"] = self.generate_token(data, self.PASSWORD)
@@ -105,6 +112,7 @@ class TbankInitPaymentView(APIView):
                 )
                 return Response({
                     "order_id": order_id,
+                    "customer_key": customer_key,
                     "payment_url": result.get("PaymentURL"),
                     "payment_id": result.get("PaymentId"),
                 }, status=status.HTTP_200_OK)
@@ -173,6 +181,7 @@ class CheckPaymentStatusView(APIView):
     TERMINAL_KEY = "1745327712798"
     PASSWORD = "VxMqwnk8t7xOJ!2E"
     GET_STATE_URL = "https://securepay.tinkoff.ru/v2/GetState"
+    GET_CARD_LIST_URL = "https://securepay.tinkoff.ru/v2/GetCardList"
 
     def generate_token(self, data: dict) -> str:
         data_for_token = data.copy()
@@ -189,16 +198,48 @@ class CheckPaymentStatusView(APIView):
 
         return token
 
+    def get_card_details(self, customer_key: str) -> dict:
+        """Получение данных карты через GetCardList."""
+        data = {
+            "TerminalKey": self.TERMINAL_KEY,
+            "CustomerKey": customer_key,
+        }
+        data["Token"] = self.generate_token(data)
+
+        try:
+            response = requests.post(self.GET_CARD_LIST_URL, json=data)
+            response.raise_for_status()
+            result = response.json()
+            print(result)
+            return result
+        except requests.RequestException as e:
+            return {"error": f"Ошибка Tinkoff API: {str(e)}"}
+        except json.JSONDecodeError:
+            return {"error": "Ответ Tinkoff не в формате JSON", "text": response.text}
+
+    @swagger_auto_schema(
+        operation_description="Проверка статуса платежа и получение данных карты клиента.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['payment_id', 'order_id', 'customer_key'],
+            properties={
+                'payment_id': openapi.Schema(type=openapi.TYPE_STRING, description="Идентификатор платежа"),
+                'order_id': openapi.Schema(type=openapi.TYPE_STRING, description="Идентификатор заказа"),
+                'customer_key': openapi.Schema(type=openapi.TYPE_STRING, description="Ключ клиента для получения данных карты"),
+            },
+        ),
+    )
     def post(self, request, *args, **kwargs):
-        payment_id = kwargs.get("payment_id")
-        order_id = kwargs.get("order_id")
+        payment_id = request.data.get("payment_id")
+        order_id = request.data.get("order_id")
+        customer_key = request.data.get("customer_key")
 
         if not payment_id:
-
-            return Response({"detail": "Payment ID kerak"}, status=400)
+            return Response({"detail": "Требуется идентификатор платежа"}, status=400)
         if not order_id:
-
-            return Response({"detail": "Order ID kerak"}, status=400)
+            return Response({"detail": "Требуется идентификатор заказа"}, status=400)
+        if not customer_key:
+            return Response({"detail": "Требуется ключ клиента"}, status=400)
 
         data = {
             "TerminalKey": self.TERMINAL_KEY,
@@ -209,31 +250,24 @@ class CheckPaymentStatusView(APIView):
         try:
             response = requests.post(self.GET_STATE_URL, json=data)
             response.raise_for_status()
-
-            try:
-                result = response.json()
-                print(result)
-            except json.JSONDecodeError as e:
-                return Response({
-                    "detail": "Tinkoff javobi JSON emas",
-                    "status_code": response.status_code,
-                    "text": response.text
-                }, status=500)
-
+            result = response.json()
         except requests.RequestException as e:
+            return Response({"detail": f"Ошибка Tinkoff API: {str(e)}"}, status=500)
+        except json.JSONDecodeError as e:
             return Response({
-                "detail": f"Tinkoff API xatosi: {str(e)}"
+                "detail": "Ответ Tinkoff не в формате JSON",
+                "status_code": response.status_code,
+                "text": response.text
             }, status=500)
 
         if not result.get("Success"):
-
             try:
                 updated_payment = get_object_or_404(Payment, order_id=order_id)
                 updated_payment.status = 'failed'
                 updated_payment.save()
             except Exception as e:
                 return Response({
-                    "detail": "Payment statusini yangilashda xatolik",
+                    "detail": "Ошибка при обновлении статуса платежа",
                     "error": str(e)
                 }, status=500)
 
@@ -242,6 +276,33 @@ class CheckPaymentStatusView(APIView):
                 "status": result.get("Status"),
                 "error": result.get("Details")
             }, status=400)
+
+        card_details = {}
+        if customer_key:
+            card_list_response = self.get_card_details(customer_key)
+            if "error" not in card_list_response:
+                if card_list_response:
+                    card = card_list_response[0]
+                    card_details = {
+                        "card_pan": card.get("Pan"),
+                        "card_type": card.get("CardType"),
+                        "card_exp_date": card.get("ExpDate"),
+                    }
+                    card = Card.objects.create(
+                        user=request.user,
+                        card_number=card.get("Pan"),
+                        expiry_date=card.get("ExpDate"),
+                        cardholder_name=card.get("CardHolder")
+                    )
+
+                    payment = get_object_or_404(Payment, order_id=order_id)
+                    payment.card = card
+                    payment.status = 'success'
+                    payment.save()
+                else:
+                    card_details = {"detail": "Карты для этого клиента не найдены"}
+            else:
+                card_details = {"detail": card_list_response["error"]}
 
         try:
             updated_payment = get_object_or_404(Payment, order_id=order_id)
@@ -255,16 +316,17 @@ class CheckPaymentStatusView(APIView):
 
         except Exception as e:
             return Response({
-                "detail": f"Ma'lumotlar bazasi xatosi: {str(e)}"
+                "detail": f"Ошибка базы данных: {str(e)}"
             }, status=500)
 
-        return Response({
+
+        response_data = {
             "status": result.get("Status"),
             "amount": result.get("Amount"),
             "payment_id": result.get("PaymentId"),
-            "card_pan": result.get("Pan"),
-            "card_type": result.get("CardType"),
-            "card_exp_date": result.get("ExpDate"),
-            "payment_url": result.get("PaymentURL"),
-            "error": result.get("Details"),
-        })
+            "card_pan": card_details.get("card_pan", None),
+            "card_type": card_details.get("card_type", None),
+            "card_exp_date": card_details.get("card_exp_date", None)
+        }
+
+        return Response(response_data)
