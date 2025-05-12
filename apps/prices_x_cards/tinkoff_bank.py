@@ -165,17 +165,6 @@ class InitPaymentView(APIView):
         return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler('payment_status.log')
-    ]
-)
-
-
 class CheckPaymentStatusView(APIView):
     permission_classes = [IsAuthenticated]
     TERMINAL_KEY = "1745327712798"
@@ -183,7 +172,6 @@ class CheckPaymentStatusView(APIView):
     GET_STATE_URL = "https://securepay.tinkoff.ru/v2/GetState"
 
     def generate_token(self, data: dict) -> str:
-        logger.info("Token generatsiyasi boshlandi: %s", data)
         data_for_token = data.copy()
         data_for_token.pop("Token", None)
         data_for_token["Password"] = self.PASSWORD
@@ -195,20 +183,18 @@ class CheckPaymentStatusView(APIView):
         sorted_items = sorted(data_for_token.items())
         token_string = ''.join(str(v) for _, v in sorted_items)
         token = hashlib.sha256(token_string.encode('utf-8')).hexdigest()
-        logger.info("Yaratilgan token: %s", token)
+
         return token
 
     def post(self, request, *args, **kwargs):
         payment_id = kwargs.get("payment_id")
         order_id = kwargs.get("order_id")
 
-        logger.info("So'rov keldi: payment_id=%s, order_id=%s, user=%s", payment_id, order_id, request.user)
-
         if not payment_id:
-            logger.error("Payment ID kiritilmagan")
+
             return Response({"detail": "Payment ID kerak"}, status=400)
         if not order_id:
-            logger.error("Order ID kiritilmagan")
+
             return Response({"detail": "Order ID kerak"}, status=400)
 
         data = {
@@ -217,17 +203,13 @@ class CheckPaymentStatusView(APIView):
         }
         data["Token"] = self.generate_token(data)
 
-        logger.info("Tinkoff API ga so'rov yuborilmoqda: %s", data)
-
         try:
             response = requests.post(self.GET_STATE_URL, json=data)
             response.raise_for_status()
-            logger.info("Tinkoff API javobi: status_code=%s, body=%s", response.status_code, response.text)
 
             try:
                 result = response.json()
             except json.JSONDecodeError as e:
-                logger.error("Tinkoff javobi JSON emas: %s", response.text)
                 return Response({
                     "detail": "Tinkoff javobi JSON emas",
                     "status_code": response.status_code,
@@ -235,21 +217,17 @@ class CheckPaymentStatusView(APIView):
                 }, status=500)
 
         except requests.RequestException as e:
-            logger.error("Tinkoff API xatosi: %s", str(e))
             return Response({
                 "detail": f"Tinkoff API xatosi: {str(e)}"
             }, status=500)
 
         if not result.get("Success"):
-            logger.warning("Tinkoff API muvaffaqiyatsiz: %s", result)
 
             try:
                 updated_payment = get_object_or_404(Payment, order_id=order_id)
                 updated_payment.status = 'failed'
                 updated_payment.save()
-                logger.info("Payment statusi yangilandi: order_id=%s, status=failed", order_id)
             except Exception as e:
-                logger.error("Payment obyekti yangilanmadi: %s", str(e))
                 return Response({
                     "detail": "Payment statusini yangilashda xatolik",
                     "error": str(e)
@@ -265,21 +243,17 @@ class CheckPaymentStatusView(APIView):
             updated_payment = get_object_or_404(Payment, order_id=order_id)
             updated_payment.status = 'success'
             updated_payment.save()
-            logger.info("Payment statusi yangilandi: order_id=%s, status=success", order_id)
 
             request_count = RequestCount.objects.create(
                 user=request.user,
                 is_active=True
             )
-            logger.info("RequestCount yaratildi: user=%s, request_count_id=%s", request.user, request_count.id)
 
         except Exception as e:
-            logger.error("Ma'lumotlar bazasi xatosi: %s", str(e))
             return Response({
                 "detail": f"Ma'lumotlar bazasi xatosi: {str(e)}"
             }, status=500)
 
-        logger.info("Muvaffaqiyatli javob tayyorlandi: payment_id=%s", payment_id)
         return Response({
             "status": result.get("Status"),
             "amount": result.get("Amount"),
