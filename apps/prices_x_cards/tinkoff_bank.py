@@ -19,97 +19,60 @@ from apps.prices_x_cards.models import ProductPocket, Payment
 
 class TbankInitPaymentView(APIView):
     permission_classes = [IsAuthenticated]
-    TERMINAL_KEY = "1745327712798"
-    PASSWORD = "VxMqwnk8t7xOJ!2E"
+
+    TERMINAL_KEY = "1745327712776DEMO"
+    PASSWORD = "9KlOjAkC^rgfG7Gl"
     INIT_URL = "https://securepay.tinkoff.ru/v2/Init"
 
-    def generate_token(self, data: dict) -> str:
-        data_for_token = data.copy()
-        data_for_token.pop("Token", None)
-        data_for_token["Password"] = self.PASSWORD
+    def generate_token(self, data, password):
+        token_data = data.copy()
+        token_data["Password"] = password
+        token_data.pop("Token", None)
+        sorted_items = sorted(token_data.items())
+        token_string = "".join(str(v) for _, v in sorted_items)
+        return hashlib.sha256(token_string.encode()).hexdigest()
 
-        for key, value in data_for_token.items():
-            if isinstance(value, (dict, list)):
-                data_for_token[key] = json.dumps(value, separators=(",", ":"), ensure_ascii=False)
+    def post(self, request, *args, **kwargs):
+        product_id = kwargs.get("id")
+        if not product_id:
+            return Response({"detail": "ID продукта не передан"}, status=status.HTTP_400_BAD_REQUEST)
 
-        sorted_items = sorted(data_for_token.items())
-        token_string = ''.join(str(v) for _, v in sorted_items)
-        return hashlib.sha256(token_string.encode('utf-8')).hexdigest()
+        product = get_object_or_404(ProductPocket, id=product_id)
+        order_id = str(uuid.uuid4())
 
-    @swagger_auto_schema(
-        operation_description="Инициализация платежа в системе Тинькофф",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'Amount': openapi.Schema(type=openapi.TYPE_INTEGER, description='Сумма платежа (в копейках)'),
-                'OrderId': openapi.Schema(type=openapi.TYPE_STRING, description='Идентификатор заказа'),
-            },
-            required=['Amount', 'OrderId']
-        ),
-        responses={
-            200: openapi.Response(
-                description="Ответ от Tinkoff API",
-                examples={
-                    'application/json': {
-                        "Success": True,
-                        "PaymentURL": "https://securepay.tinkoff.ru/success_url"
-                    }
-                }
-            ),
-            400: openapi.Response(
-                description="Ошибка валидации данных",
-                examples={
-                    'application/json': {
-                        "error": "Поля Amount и OrderId обязательны."
-                    }
-                }
-            ),
-            500: openapi.Response(
-                description="Ошибка сервера",
-                examples={
-                    'application/json': {
-                        "error": "Ошибка запроса к Tinkoff"
-                    }
-                }
-            ),
-        }
-    )
-    def post(self, request):
-        amount = request.data.get("Amount")
-        order_id = request.data.get("OrderId")
-
-        if not amount or not order_id:
-            return Response({
-                "error": "Поля Amount и OrderId обязательны."
-            }, status=400)
-
-        payload = {
+        data = {
             "TerminalKey": self.TERMINAL_KEY,
-            "Amount": amount,
+            "Amount": int(product.price * 100),
             "OrderId": order_id,
-            "Description": "Оплата заказа",
+            "Description": f"Оплата за продукт: {product.title}",
             "SuccessURL": "https://example.com/success",
-            "FailURL": "https://example.com/fail"
+            "FailURL": "https://example.com/fail",
         }
 
-        payload["Token"] = self.generate_token(payload)
+        data["Token"] = self.generate_token(data, self.PASSWORD)
 
         try:
+            response = requests.post(self.INIT_URL, json=data)
+            result = response.json()
 
-            response = requests.post(self.INIT_URL, json=payload)
-
-            try:
-                return Response(response.json())
-            except json.JSONDecodeError:
+            if result.get("Success"):
+                Payment.objects.create(
+                    user=request.user,
+                    product_pocket=product,
+                    amount=product.price,
+                    status="pending",
+                    order_id=order_id
+                )
                 return Response({
-                    "error": "Ответ от Tinkoff не является JSON",
-                    "status_code": response.status_code,
-                    "text": response.text
-                }, status=response.status_code)
+                    "order_id": order_id,
+                    "payment_url": result.get("PaymentURL"),
+                    "payment_id": result.get("PaymentId"),
+                }, status=status.HTTP_200_OK)
+
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
         except requests.RequestException as e:
-            return Response({
-                "error": str(e)
-            }, status=500)
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class InitPaymentView(APIView):
