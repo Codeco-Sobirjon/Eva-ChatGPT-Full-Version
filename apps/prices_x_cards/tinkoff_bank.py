@@ -45,8 +45,8 @@ class TbankInitPaymentView(APIView):
             "Amount": int(product.price * 100),
             "OrderId": order_id,
             "Description": f"Оплата за продукт: {product.title}",
-            "SuccessURL": "https://example.com/success",
-            "FailURL": "https://example.com/fail",
+            "SuccessURL": "https://eva-three-mu.vercel.app/",
+            "FailURL": "https://eva-three-mu.vercel.app/",
         }
 
         data["Token"] = self.generate_token(data, self.PASSWORD)
