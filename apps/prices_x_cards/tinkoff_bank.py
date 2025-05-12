@@ -18,7 +18,7 @@ from apps.prices_x_cards.models import ProductPocket, Payment
 
 
 class TbankInitPaymentView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     TERMINAL_KEY = "1745327712798"
     PASSWORD = "VxMqwnk8t7xOJ!2E"
     INIT_URL = "https://securepay.tinkoff.ru/v2/Init"
