@@ -89,7 +89,7 @@ class TbankInitPaymentView(APIView):
         amount = int(product.price * 100)
 
         receipt = {
-            "Email": request.user.email if request.user.is_authenticated else "no-reply@example.com",
+            "Email": "no-reply@example.com",
             "Phone": "",
             "Taxation": "osn",
             "Items": [
