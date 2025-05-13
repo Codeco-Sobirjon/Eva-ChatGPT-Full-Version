@@ -28,6 +28,7 @@ class TbankInitPaymentView(APIView):
         token_data = data.copy()
         token_data["Password"] = password
         token_data.pop("Token", None)
+        token_data.pop("Receipt", None)
         sorted_items = sorted(token_data.items())
         token_string = "".join(str(v) for _, v in sorted_items)
         return hashlib.sha256(token_string.encode()).hexdigest()
@@ -94,7 +95,7 @@ class TbankInitPaymentView(APIView):
             "Taxation": "osn",
             "Items": [
                 {
-                    "Name": product.title[:64],
+                    "Name": product.title,
                     "Price": amount,
                     "Quantity": 1.0,
                     "Amount": amount,
