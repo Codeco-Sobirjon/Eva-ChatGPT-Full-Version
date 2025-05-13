@@ -86,6 +86,25 @@ class TbankInitPaymentView(APIView):
         else:
             customer_key = str(uuid.uuid4())
 
+        amount = int(product.price * 100)
+
+        receipt = {
+            "Email": request.user.email if request.user.is_authenticated else "no-reply@example.com",
+            "Phone": "",
+            "Taxation": "osn",
+            "Items": [
+                {
+                    "Name": product.title[:64],
+                    "Price": amount,
+                    "Quantity": 1.0,
+                    "Amount": amount,
+                    "PaymentMethod": "full_prepayment",
+                    "PaymentObject": "commodity",
+                    "Tax": "none"
+                }
+            ]
+        }
+
         data = {
             "TerminalKey": self.TERMINAL_KEY,
             "Amount": int(product.price * 100),
@@ -93,7 +112,8 @@ class TbankInitPaymentView(APIView):
             "Description": f"Оплата за продукт: {product.title}",
             "SuccessURL": "https://eva-three-mu.vercel.app/",
             "FailURL": "https://eva-three-mu.vercel.app/",
-            "CustomerKey": customer_key
+            "CustomerKey": customer_key,
+            "Receipt": receipt
         }
 
         data["Token"] = self.generate_token(data, self.PASSWORD)
@@ -210,7 +230,6 @@ class CheckPaymentStatusView(APIView):
             response = requests.post(self.GET_CARD_LIST_URL, json=data)
             response.raise_for_status()
             result = response.json()
-            print(result)
             return result
         except requests.RequestException as e:
             return {"error": f"Ошибка Tinkoff API: {str(e)}"}
