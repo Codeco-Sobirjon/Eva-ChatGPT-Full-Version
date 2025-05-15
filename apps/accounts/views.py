@@ -120,7 +120,7 @@ class VKSignInURLAPIView(APIView):
     )
     def get(self, request):
         client_id = "52982778"
-        redirect_uri = "https://eva-three-mu.vercel.app/auth/vk/login/callback/"
+        redirect_uri = "https://askeva.ru/auth/vk/login/callback/"
         scope = "email"
         response_type = "code"
         v = "5.131"
@@ -192,7 +192,7 @@ class VKAuthAPIView(APIView):
 			f"https://oauth.vk.com/access_token?"
 			f"client_id=52982778&"
 			f"client_secret=tPZ6YRgnZzwubzWy7RyF&"
-			f"redirect_uri=https://eva-three-mu.vercel.app/auth/vk/login/callback/&"
+			f"redirect_uri=https://askeva.ru/auth/vk/login/callback/&"
 			f"code={code}"
 		)
 

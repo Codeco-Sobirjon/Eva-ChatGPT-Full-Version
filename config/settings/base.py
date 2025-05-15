@@ -269,7 +269,7 @@ YOUR_VK_CLIENT_SECRET = "3RLC3fBxCaCvhElNBO2b"
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-GOOGLE_REDIRECT_URI = "https://eva-three-mu.vercel.app/api/auth/google/callback/"
+GOOGLE_REDIRECT_URI = "https://askeva.ru/api/auth/google/callback/"
 
 SOCIALACCOUNT_PROVIDERS = {
     'vk': {
@@ -281,7 +281,7 @@ SOCIALACCOUNT_PROVIDERS = {
         'AUTH_PARAMS': {'v': '5.131'},
         'OAUTH_PKCE_ENABLED': True,
         'METHOD': 'oauth2',
-        'OAUTH_CALLBACK_URL': 'https://eva-three-mu.vercel.app/auth/vk/login/callback/'
+        'OAUTH_CALLBACK_URL': 'https://askeva.ru/auth/vk/login/callback/'
     }
 }
 
@@ -305,5 +305,5 @@ ROBOKASSA_URL = "https://auth.robokassa.ru/Merchant/Index.aspx"
 
 TINKOFF_TERMINAL_KEY = 'YourTerminalKey'
 TINKOFF_PASSWORD = 'YourPassword'
-TINKOFF_AMOUNT = 10000  # in kopecks (100.00 RUB)
-TINKOFF_CARD = '4111111111111111'  # test Visa
+TINKOFF_AMOUNT = 10000
+TINKOFF_CARD = '4111111111111111'
