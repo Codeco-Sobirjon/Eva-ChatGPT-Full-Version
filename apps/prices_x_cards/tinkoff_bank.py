@@ -111,8 +111,8 @@ class TbankInitPaymentView(APIView):
             "Amount": int(product.price * 100),
             "OrderId": order_id,
             "Description": f"Оплата за продукт: {product.title}",
-            "SuccessURL": "https://eva-three-mu.vercel.app/",
-            "FailURL": "https://eva-three-mu.vercel.app/",
+            "SuccessURL": "https://askeva.ru/",
+            "FailURL": "https://askeva.ru/",
             "CustomerKey": customer_key,
             "Receipt": receipt
         }

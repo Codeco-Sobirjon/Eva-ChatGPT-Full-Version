@@ -21,7 +21,7 @@ class TbankInitPaymentView(APIView):
     permission_classes = [AllowAny]
 
     TERMINAL_KEY = "1745327712798"
-    PASSWORD = "9KlOjAkC^rgfG7Gl"
+    PASSWORD = "VxMqwnk8t7xOJ!2E"
     INIT_URL = "https://securepay.tinkoff.ru/v2/Init"
 
     def generate_token(self, data, password):
