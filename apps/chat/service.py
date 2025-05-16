@@ -1,6 +1,7 @@
 import os
 
-import openai
+# import openai
+from openai import OpenAI
 from functools import lru_cache
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
@@ -14,9 +15,7 @@ load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-
-client = openai.OpenAI(
-	api_key=OPENAI_API_KEY)
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 
 @lru_cache(maxsize=100)
