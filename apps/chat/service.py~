@@ -21,7 +21,6 @@ client = openai.OpenAI(
 
 @lru_cache(maxsize=100)
 def cached_response(user_message, language):
-	print(chatbot_response_core(user_message, language))
 	return chatbot_response_core(user_message, language)
 
 
