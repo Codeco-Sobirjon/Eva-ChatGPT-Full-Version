@@ -82,7 +82,8 @@ def chatbot_response_core(user_message, language):
 
 
 def chatbot_response(user_message):
-	language = detect_language(user_message)
+	text = 'У меня болезнь желудка, гастрит — какие лекарства мне можно принимать?'
+	language = detect_language(text)
 
 	if language not in ["ru", "en", "uz"]:
 		if language == "ru":
@@ -92,7 +93,7 @@ def chatbot_response(user_message):
 		else:
 			return "Please write only in Russian, English, or Uzbek."
 
-	return cached_response(user_message, language)
+	return cached_response(text, language)
 
 
 class ChatService:
