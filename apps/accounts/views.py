@@ -46,7 +46,6 @@ class GoogleLoginAPIView(APIView):
 		}
 	)
 	def get(self, request):
-		print(settings.GOOGLE_CLIENT_ID, settings.GOOGLE_CLIENT_SECRET)
 
 		google_service = GoogleLoginService()
 		auth_url = google_service.get_authorization_url()
