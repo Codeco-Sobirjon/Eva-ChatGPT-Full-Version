@@ -1,3 +1,4 @@
+from pathlib import Path
 import os
 
 import openai
@@ -10,9 +11,12 @@ from rest_framework import status
 from apps.chat.models import ChatHistory, Message, RequestCount
 from apps.prices_x_cards.models import Payment
 from dotenv import load_dotenv
-load_dotenv()
+#load_dotenv()
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+load_env(Path(__file__).resolve().parent.parent / ".env")
+
+#OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+API_KEY = os.environ.get("API_KEY", "12346579")
 
 print("API KEY:", OPENAI_API_KEY)
 
