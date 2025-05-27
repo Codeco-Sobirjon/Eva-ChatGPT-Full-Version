@@ -11,6 +11,7 @@ from rest_framework import status
 from apps.chat.models import ChatHistory, Message, RequestCount
 from apps.prices_x_cards.models import Payment
 from dotenv import load_dotenv
+from apps.chat.load_env import load_env
 #load_dotenv()
 
 load_env(Path(__file__).resolve().parent.parent / ".env")
