@@ -27,6 +27,8 @@ USER_FIELDS = [
 	"has_mobile", "contacts", "education", "online", "counters", "relation",
 	"last_seen", "activity", "universities",
 ]
+print(settings.GOOGLE_CLIENT_ID, 1)
+print(settings.GOOGLE_CLIENT_SECRET, 2)
 
 
 class GoogleLoginAPIView(APIView):

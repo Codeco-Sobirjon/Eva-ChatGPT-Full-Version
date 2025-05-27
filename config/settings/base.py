@@ -3,10 +3,7 @@ from datetime import timedelta
 from pathlib import Path
 from decouple import config
 from dotenv import load_dotenv
-
-from apps.chat.load_env import load_env
-
-load_env(Path(__file__).resolve().parent.parent / ".env")
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -269,8 +266,8 @@ YOUR_VK_CLIENT_SECRET = "3RLC3fBxCaCvhElNBO2b"
 # YOUR_VK_CLIENT_ID = '52982778'
 # YOUR_VK_CLIENT_SECRET = 'tPZ6YRgnZzwubzWy7RyF'
 
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
-GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
 GOOGLE_REDIRECT_URI = "https://askeva.ru/api/auth/google/callback/"
 
 SOCIALACCOUNT_PROVIDERS = {

@@ -270,7 +270,7 @@ YOUR_VK_CLIENT_SECRET = "3RLC3fBxCaCvhElNBO2b"
 # YOUR_VK_CLIENT_SECRET = 'tPZ6YRgnZzwubzWy7RyF'
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
-GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET". "")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
 GOOGLE_REDIRECT_URI = "https://askeva.ru/api/auth/google/callback/"
 
 SOCIALACCOUNT_PROVIDERS = {
