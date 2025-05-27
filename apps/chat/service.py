@@ -17,7 +17,7 @@ from apps.chat.load_env import load_env
 load_env(Path(__file__).resolve().parent.parent / ".env")
 
 #OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-API_KEY = os.environ.get("API_KEY", "12346579")
+OPENAI_API_KEY = os.environ.get("API_KEY", "12346579")
 
 print("API KEY:", OPENAI_API_KEY)
 
