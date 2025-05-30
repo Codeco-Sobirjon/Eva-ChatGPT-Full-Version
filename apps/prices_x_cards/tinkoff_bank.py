@@ -111,7 +111,7 @@ class TbankInitPaymentView(APIView):
             "Amount": int(product.price * 100),
             "OrderId": order_id,
             "Description": f"Оплата за продукт: {product.title}",
-            "SuccessURL": "https://askeva.ru/blog",
+            "SuccessURL": "https://askeva.ru/",
             "FailURL": "https://askeva.ru/",
             "CustomerKey": customer_key,
             "Receipt": receipt
