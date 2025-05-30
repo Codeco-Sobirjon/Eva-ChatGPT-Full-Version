@@ -1,6 +1,6 @@
 from django.urls import path
 
-from apps.prices_x_cards.tinkoff_bank import CheckPaymentStatusView, TbankInitPaymentView
+from apps.prices_x_cards.tinkoff_bank import InitPaymentView, CheckPaymentStatusView, TbankInitPaymentView
 from apps.prices_x_cards.views import ProductListCreateAPIView, ProductDetailAPIView, \
     CardListCreateAPIView, PaymentListCreateAPIView
 
